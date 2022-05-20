@@ -1,0 +1,6 @@
+[
+    {
+        "name": "STM32L432KC kit",
+        "toolchainFile": "${workspaceFolder}/bsp/stm32l432kc/toolchain.cmake"
+    }
+]
