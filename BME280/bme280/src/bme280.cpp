@@ -94,7 +94,7 @@ namespace BME280 {
         this->_write(BME280_RESET_ADDR, &data, 1);
     }
 
-    bme280::bme_status bme280::bme280_Init(meas_oversampling temp_oversampling, meas_oversampling hum_oversampling, 
+    bme_status bme280::bme280_Init(meas_oversampling temp_oversampling, meas_oversampling hum_oversampling, 
         meas_oversampling press_oversampling,working_mode mode, standby_time s_time, filter_coeffitiens filter)
     {
         if ((temp_oversampling >= OVERSAMPLING_TOP) || (hum_oversampling >= OVERSAMPLING_TOP) || (press_oversampling >= OVERSAMPLING_TOP) || 
@@ -103,7 +103,7 @@ namespace BME280 {
             return STATUS_ERROR;
         }
 
-        bme280::bme_status status = STATUS_ERROR;
+        bme_status status = STATUS_ERROR;
 
         this->temperature_oversampling = temp_oversampling;
         this->humidity_oversampling = hum_oversampling;
@@ -130,7 +130,6 @@ namespace BME280 {
         // reading parameters for data compensation
         _readCompensationData();
 
-        uint8_t data = 0;
         if (mode == MODE_NORMAL)
         {
             // setting standby time, filter and disable 3-wire SPI
