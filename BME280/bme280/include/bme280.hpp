@@ -110,12 +110,12 @@ namespace BME280 {
         /**
          * @brief Initialize BME280 sensor
          * 
-         * @param [in] temp_oversampling 
-         * @param [in] hum_oversampling 
-         * @param [in] press_oversampling 
+         * @param [in] temp_oversampling oversampling of temperature measurement (if "0" measurement is disabled)
+         * @param [in] hum_oversampling oversampling of humidity measurement (if "0" measurement is disabled)
+         * @param [in] press_oversampling oversampling of pressure measurement (if "0" measurement is disabled)
          * @param [in] mode working mode of a sensor 
-         * @param [in] s_time 
-         * @param [in] filter 
+         * @param [in] s_time standby timer value
+         * @param [in] filter filter coeffitients value
          * @return STATUS_OK if initialization was successful otherwise STATUS_ERROR
          */
         bme_status bme280_Init(meas_oversampling temp_oversampling, meas_oversampling hum_oversampling, 
