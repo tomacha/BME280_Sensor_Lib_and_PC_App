@@ -1,5 +1,14 @@
 [
     {
+        "name": "x86_64",
+        "toolchainFile": "${workspaceFolder}/bsp/x86_64/toolchain.cmake",
+        "compilers": {
+            "C": "/usr/bin/gcc",
+            "CXX": "/usr/bin/g++",
+            "ASM": "/usr/bin/gcc"
+        }
+    },
+    {
         "name": "STM32L432KC kit",
         "toolchainFile": "${workspaceFolder}/bsp/stm32l432kc/toolchain.cmake"
     }
