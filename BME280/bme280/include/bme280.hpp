@@ -114,11 +114,19 @@ namespace BME280 {
         void (* _delay) (uint32_t ms) = nullptr;
 
         bme_status _readCompensationData(void);
+        bme_status _forceMeasurement(void);
         bme_status _readRawData(void);
+        void _compensate_temperature(void);
+        void _compensate_pressure(void);
+        void _compensate_humidity(void);
 
     public:
+        float temperature;
+        float pressure;
+        float humidity;
+
         /**
-         * @brief Construct a new bme280 object
+         * @brief Construct a new bme280 object.
          * 
          * @param [in] read_fp pointer to read function
          * @param [in] write_fp pointer to write function 
@@ -127,12 +135,12 @@ namespace BME280 {
         bme280(bme_status (*read_fp)(uint8_t, uint8_t *, uint32_t), bme_status (*write_fp)(uint8_t, uint8_t *, uint32_t), void (*delay_fp)(uint32_t));
         
         /**
-         * @brief Stop sensor measurements and destroy bme280 object
+         * @brief Stop sensor measurements and destroy bme280 object.
          */
         ~bme280();
 
         /**
-         * @brief Initialize BME280 sensor
+         * @brief Initialize BME280 sensor.
          * 
          * @param [in] temp_oversampling oversampling of temperature measurement (if "0" measurement is disabled)
          * @param [in] hum_oversampling oversampling of humidity measurement (if "0" measurement is disabled)
@@ -140,14 +148,46 @@ namespace BME280 {
          * @param [in] mode working mode of a sensor 
          * @param [in] s_time standby timer value
          * @param [in] filter filter coeffitients value
-         * @return STATUS_OK if initialization was successful otherwise STATUS_ERROR
+         * @return STATUS_OK if initialization was successful otherwise STATUS_ERROR.
          */
         bme_status bme280_Init(meas_oversampling temp_oversampling, meas_oversampling hum_oversampling, 
             meas_oversampling press_oversampling, working_mode mode, standby_time s_time, filter_coeffitiens filter);
 
-        bme_status bme280_ReadTemp();
-        bme_status bme280_ReadPress();
-        bme_status bme280_ReadHum();
+        /**
+         * @brief Read raw tempearatue from sensor and compensate it.
+         * 
+         * @return STATUS_OK if read was successful otherwise STATUS_ERROR.
+         * 
+         * @note Method automatically forces new measurement if sensor is in MODE_FORCED.
+         */
+        bme_status bme280_ReadTemperature(void);
+
+        /**
+         * @brief Read raw pressure from sensor and compensate it.
+         * 
+         * @return STATUS_OK if read was successful otherwise STATUS_ERROR.
+         * 
+         * @note Method automatically forces new measurement if sensor is in MODE_FORCED.
+         * @note Method performs temperature compensation in order to get new t_fine.
+         */
+        bme_status bme280_ReadPressure(void);
+
+        /**
+         * @brief Read raw humidity from sensor and compensate it.
+         * 
+         * @return STATUS_OK if read was successful otherwise STATUS_ERROR.
+         * 
+         * @note Method automatically forces new measurement if sensor is in MODE_FORCED.
+         * @note Method performs temperature compensation in order to get new t_fine.
+         */
+        bme_status bme280_ReadHumidity(void);
+
+        /**
+         * @brief Read raw measurements from sensor and compensate them.
+         * 
+         * @return STATUS_OK if read was successful otherwise STATUS_ERROR. 
+         */
+        bme_status bme280_ReadMeasurements(void);
     };
 }
 
