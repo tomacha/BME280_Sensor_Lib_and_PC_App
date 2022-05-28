@@ -51,12 +51,26 @@ enum _sensor_addresses
 
 namespace BME280 {
 
-    void bme280::_readCompensationData(void)
+    bme_status bme280::_readCompensationData(void)
     {
         uint8_t temp[32] = {0};
-        this->_read(BME280_CALIBRATION_DIG_T1_ADDR, (uint8_t*) &temp[0], 24);
-        this->_read(BME280_CALIBRATION_DIG_H1_ADDR, (uint8_t*) &temp[24], 1);
-        this->_read(BME280_CALIBRATION_DIG_H2_ADDR, (uint8_t*) &temp[25], 7);
+        bme_status status;
+
+        status = this->_read(BME280_CALIBRATION_DIG_T1_ADDR, (uint8_t*) &temp[0], 24);
+        if (status != STATUS_OK) 
+        {
+            return status;
+        }
+        status = this->_read(BME280_CALIBRATION_DIG_H1_ADDR, (uint8_t*) &temp[24], 1);
+        if (status != STATUS_OK) 
+        {
+            return status;
+        }
+        status = this->_read(BME280_CALIBRATION_DIG_H2_ADDR, (uint8_t*) &temp[25], 7);
+        if (status != STATUS_OK) 
+        {
+            return status;
+        }
 
         this->sensor_compensation_data.t1 = (((uint16_t) (temp[1]<< 8)) | ((uint16_t) temp[0]));
         this->sensor_compensation_data.t2 = (((uint16_t) (temp[3]<< 8)) | ((uint16_t) temp[2]));
@@ -78,6 +92,26 @@ namespace BME280 {
         this->sensor_compensation_data.h4 = (((uint16_t) (temp[28] << 4)) | ((uint16_t) (temp[29] & 0x0F)));
         this->sensor_compensation_data.h5 = (((uint16_t) (temp[29] >> 4)) | ((uint16_t) (temp[30] << 4)));
         this->sensor_compensation_data.h6 = temp[31];
+        
+        return STATUS_OK;
+    }
+
+    bme_status bme280::_readRawData(void)
+    {
+        uint8_t temp[8];
+        bme_status status;
+        
+        status = this->_read(BME280_MEASUREMENT_PRESS_MSB_ADDR, (uint8_t*) &temp, 8);
+        if (status != STATUS_OK)
+        {
+            return status;
+        }
+
+        this->raw_press = (((uint32_t) temp[0] << 16) | ((uint32_t) temp[1] << 8) | temp[2]);
+        this->raw_temp = (((uint32_t) temp[3] << 16) | ((uint32_t) temp[4] << 8) | temp[5]);
+        this->raw_hum = (((uint32_t) temp[6] << 8) | temp[7]);
+
+        return STATUS_OK;
     }
 
     bme280::bme280(bme_status (*read_fp)(uint8_t, uint8_t *, uint32_t), bme_status (*write_fp)(uint8_t, uint8_t *, uint32_t), void (*delay_fp)(uint32_t))

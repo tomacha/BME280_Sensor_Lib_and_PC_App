@@ -12,6 +12,9 @@
 
 #include <cstdint>
 
+#define BME280_I2C_ADDR_GND     (0x76 << 1)
+#define BME280_I2C_ADDR_VCC     (0x77 << 1)
+
 namespace BME280 {
 
     enum bme_status {
@@ -93,8 +96,6 @@ namespace BME280 {
     class bme280
     {
     private:
-
-        
         working_mode sensor_work_mode = MODE_SLEEP;
         standby_time sensor_standby_time = STANDBY_0_5;
         filter_coeffitiens sensor_selected_filter = FILTER_OFF;
@@ -103,15 +104,19 @@ namespace BME280 {
         meas_oversampling pressure_oversampling = OVERSAMPLING_NONE;
         struct bme280_compensation_data sensor_compensation_data = {0};
 
+        int32_t raw_temp = 0;
+        int32_t raw_press = 0;
+        int32_t raw_hum = 0;
+        int32_t t_fine;
+
         bme_status (* _read) (uint8_t reg_addr, uint8_t *data, uint32_t data_len) = nullptr;
         bme_status (* _write) (uint8_t reg_addr, uint8_t *data, uint32_t data_len) = nullptr;
         void (* _delay) (uint32_t ms) = nullptr;
 
-        void _readCompensationData(void);
+        bme_status _readCompensationData(void);
+        bme_status _readRawData(void);
 
     public:
-        
-
         /**
          * @brief Construct a new bme280 object
          * 
@@ -140,7 +145,9 @@ namespace BME280 {
         bme_status bme280_Init(meas_oversampling temp_oversampling, meas_oversampling hum_oversampling, 
             meas_oversampling press_oversampling, working_mode mode, standby_time s_time, filter_coeffitiens filter);
 
-            
+        bme_status bme280_ReadTemp();
+        bme_status bme280_ReadPress();
+        bme_status bme280_ReadHum();
     };
 }
 
