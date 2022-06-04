@@ -134,11 +134,11 @@ namespace BME280 {
 
     bme_status bme280::_readRawData(void)
     {
-        uint8_t temp[8];
+        uint8_t temp[8] = {0};
         bme_status status;
         
         // check mode of the sensor
-        if(this->sensor_work_mode == MODE_FORCED)
+        if(this->sensor_work_mode != MODE_NORMAL)
         {
             status = _forceMeasurement();
             if(status != STATUS_OK)
@@ -174,7 +174,7 @@ namespace BME280 {
         // t_fine carries global temperature for compensation for humidity and pressure
         this->t_fine = var1 + var2;
         // return value in DegC
-        this->temperature = ((this->t_fine * 5 + 128) >> 8) / 100;
+        this->temperature = (float)(((this->t_fine) * 5 + 128) >> 8) / 100;
     }
 
     void bme280::_compensate_pressure(void)
@@ -206,7 +206,7 @@ namespace BME280 {
         p = ((p + val1 + val2) >> 8) + (((int64_t) this->sensor_compensation_data.p7) << 4);
         
         // returning value in hPa
-	    this->pressure = (int32_t) p / 256000.0;
+	    this->pressure = (int32_t) p / 25600.0;
     }   
 
     void bme280::_compensate_humidity(void)
@@ -264,6 +264,7 @@ namespace BME280 {
         // perform soft reset
         uint8_t data = 0xB6;
         status = this->_write(BME280_RESET_ADDR, &data, 1);
+        if (status != STATUS_OK) { return status; }
 
         // wait for end of callibration
         status = this->_read(BME280_STATUS_ADDR, &data, 1);
@@ -271,13 +272,14 @@ namespace BME280 {
 
         while ((data & 0x01) != 0)
         {
-            this->_delay(10);
-            this->_read(BME280_STATUS_ADDR, &data, 1);
+            this->_delay(20);
+            status = this->_read(BME280_STATUS_ADDR, &data, 1);
             if (status != STATUS_OK) { return status; }
         }
         
         // reading parameters for data compensation
-        _readCompensationData();
+        status = _readCompensationData();
+        if (status != STATUS_OK) { return status; }
 
         if (mode == MODE_NORMAL)
         {
