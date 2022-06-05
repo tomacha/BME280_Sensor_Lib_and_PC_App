@@ -11,13 +11,15 @@ add_library(
   stm32_hal_obj OBJECT
   Core/Src/main.c
   Core/Src/gpio.c
-  Core/Src/i2c.c
+  Core/Src/spi.c
   Core/Src/usart.c
   Core/Src/stm32l4xx_it.c
   Core/Src/stm32l4xx_hal_msp.c
+  Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c
+  Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c
+  Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c
   Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c
   Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c
-  Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c
   Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c
   Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c
   Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c
@@ -34,7 +36,7 @@ add_library(
   Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c
   Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c
   Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c
-  Core/Src/system_stm32l4xx.c 
+  Core/Src/system_stm32l4xx.c  
   startup_stm32l432xx.s)
 
 # Dodajemy foldery nagłówków, tak jak w CubeMX Makefile

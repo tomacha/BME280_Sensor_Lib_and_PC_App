@@ -332,3 +332,8 @@ ASALocalRun/
 
 # Build output for this sample
 *.out
+
+# stm32 ignore
+/bsp/stm32l432kc/*
+!/bsp/stm32l432kc/cubeMX/bme280_stm32l423kc.ioc
+!/bsp/stm32l432kc/cubeMX/CMakeLists.txt
