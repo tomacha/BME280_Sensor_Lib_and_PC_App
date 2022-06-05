@@ -6,6 +6,7 @@ project(${This} CXX C ASM)
 
 add_subdirectory(bsp/bsp_interface) # Add library that provides bsp common interface
 add_subdirectory(bme280)
+add_subdirectory(cli)
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL arm)
     message("Building application for NUCLEO-L432KC")
@@ -16,4 +17,4 @@ else()
 endif()
 
 add_executable(${This} main.cpp )
-target_link_libraries(${This} bsp bme280)
+target_link_libraries(${This} bsp bme280 cli
