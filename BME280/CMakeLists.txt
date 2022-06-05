@@ -17,4 +17,4 @@ else()
 endif()
 
 add_executable(${This} main.cpp )
-target_link_libraries(${This} bsp bme280 cli
+target_link_libraries(${This} bsp bme280 cli)
