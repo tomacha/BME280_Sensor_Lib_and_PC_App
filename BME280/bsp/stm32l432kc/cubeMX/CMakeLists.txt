@@ -4,8 +4,7 @@
 # bibliotekę statyczną) Dzięki temu, podczas tworzenia biblioteki, nie zostaną
 # usunięte "pozornie" nieużywane symbole.
 add_library(stm32_hal INTERFACE)
-target_link_libraries(stm32_hal INTERFACE stm32_hal_obj
-                                          $<TARGET_OBJECTS:stm32_hal_obj>)
+target_link_libraries(stm32_hal INTERFACE stm32_hal_obj $<TARGET_OBJECTS:stm32_hal_obj>)
 
 add_library(
   stm32_hal_obj OBJECT
