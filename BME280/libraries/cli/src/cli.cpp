@@ -8,15 +8,6 @@
 #include "cli.hpp"
 #include <cstring>
 
-#define CLI_LOGS_EN
-
-#ifdef CLI_LOGS_EN
-#define LOG(_msg) this->_write((uint8_t*) _msg, sizeof(_msg))
-#else
-#define LOG(_msg)
-#endif 
-
-
 
 namespace CLI
 {
@@ -62,8 +53,6 @@ namespace CLI
             {
                 this->cmd_pending_number += 1;
 
-                LOG("\n\r");
-
                 if (this->working_mode == MODE_AUTO)
                 {
                     this->cli_processCommand();
@@ -73,7 +62,6 @@ namespace CLI
         else
         {
             this->command_buff.push_back(c);
-            // LOG(&c);
         }
 
         return STATUS_OK;
@@ -112,21 +100,20 @@ namespace CLI
             status = _find_command(&argv[0], &cmd_handler);
             if (status != STATUS_OK)
             {   
-                LOG("Could not find command\n\r");
+                this->_write((uint8_t*) "CLI Could not find command\n", sizeof("CLI Could not find command\n",));
                 this->_write((uint8_t*) argv[0].data(), argv[0].length());
-                LOG("\n\r");
+                this->_write((uint8_t*) "\n", sizeof("\n",));
             }
             else
             {
-                this->_write((uint8_t*) "cli_processCommand\n\r", sizeof("cli_processCommand\n\r"));
                 status = cmd_handler(&argv);
                 if (status == STATUS_OK)
                 {
-                    this->_write((uint8_t*) "Command OK\n\r", sizeof("Command OK\n\r"));
+                    this->_write((uint8_t*) "CLI Command_OK\n", sizeof("CLI Command_OK\n"));
                 }
                 else
                 {
-                    this->_write((uint8_t*) "Command ERROR\n\r", sizeof("Command ERROR\n\r"));
+                    this->_write((uint8_t*) "CLI Command_ERROR\n", sizeof("CLI Command_ERROR\n"));
                 }
                 
             }
