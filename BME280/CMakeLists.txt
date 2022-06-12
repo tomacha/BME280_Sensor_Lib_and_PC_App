@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(This proj_name)
+set(This bme280_project)
 
 project(${This} CXX C ASM)
 
 add_subdirectory(bsp/bsp_interface) # Add library that provides bsp common interface
-add_subdirectory(bme280)
+add_subdirectory(Libraries/bme280)
+add_subdirectory(Libraries/bme280_cli)
+add_subdirectory(Libraries/cli)
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL arm)
     message("Building application for NUCLEO-L432KC")
@@ -16,4 +18,4 @@ else()
 endif()
 
 add_executable(${This} main.cpp )
-target_link_libraries(${This} bsp bme280)
+target_link_libraries(${This} bsp bme280 bme280_cli cli)
