@@ -96,11 +96,57 @@ namespace BME280 {
         return STATUS_OK;
     }
 
+    bme_status bme280::_forceMeasurement(void)
+    {
+        bme_status status;
+        uint8_t reg;
+
+        status = this->_read(BME280_CTRL_MEAS_ADDR, &reg, 1);
+        if(status != STATUS_OK)
+        {
+            return status;
+        }
+        reg &= ~(0x03);
+        reg |= MODE_FORCED;
+        status = this->_write(BME280_CTRL_MEAS_ADDR, &reg, 1);
+        if(status != STATUS_OK)
+        {
+            return status;
+        }
+
+        // wait for end of measurement
+        while (1)
+        {
+            status = this->_read(BME280_CTRL_MEAS_ADDR, &reg, 1);
+            if(status != STATUS_OK)
+            {
+                return status;
+            }
+            reg &= 0x03;
+            if(reg == MODE_SLEEP)
+            {
+                break;;
+            }
+        }
+
+        return STATUS_OK;
+    }
+
     bme_status bme280::_readRawData(void)
     {
-        uint8_t temp[8];
+        uint8_t temp[8] = {0};
         bme_status status;
         
+        // check mode of the sensor
+        if(this->sensor_work_mode != MODE_NORMAL)
+        {
+            status = _forceMeasurement();
+            if(status != STATUS_OK)
+            {
+                return status;
+            }
+        }
+
         status = this->_read(BME280_MEASUREMENT_PRESS_MSB_ADDR, (uint8_t*) &temp, 8);
         if (status != STATUS_OK)
         {
@@ -112,6 +158,75 @@ namespace BME280 {
         this->raw_hum = (((uint32_t) temp[6] << 8) | temp[7]);
 
         return STATUS_OK;
+    }
+
+    void bme280::_compensate_temperature(void)
+    {
+        uint32_t var1, var2;
+
+        this->raw_temp = this->raw_temp >> 4;
+
+        var1 = ((((this->raw_temp >> 3) - ((int32_t) this->sensor_compensation_data.t1 <<1))) *
+                ((int32_t)this->sensor_compensation_data.t2)) >> 11;
+        var2 = (((((this->raw_temp >> 4)- ((int32_t) this->sensor_compensation_data.t1)) *
+                ((this->raw_temp >> 4) - ((int32_t) this->sensor_compensation_data.t1))) >> 12) *
+                ((int32_t)this->sensor_compensation_data.t3)) >> 14;
+        // t_fine carries global temperature for compensation for humidity and pressure
+        this->t_fine = var1 + var2;
+        // return value in DegC
+        this->temperature = (float)(((this->t_fine) * 5 + 128) >> 8) / 100;
+    }
+
+    void bme280::_compensate_pressure(void)
+    {
+        int64_t val1, val2, p;
+
+        this->raw_press = this->raw_press >> 4;
+
+        val1 = ((int64_t) this->t_fine) - 128000;
+        val2 = val1 * val1 * (int64_t) this->sensor_compensation_data.p6;
+        val2 = val2 + ((val1 * (int64_t) this->sensor_compensation_data.p5) << 17);
+        val2 = val2 + (((int64_t) this->sensor_compensation_data.p4) << 35);
+        val1 = ((val1 * val1 * (int64_t) this->sensor_compensation_data.p3) >> 8) + 
+            ((val1 *(int64_t )this->sensor_compensation_data.p2) << 12);
+        val1 = (((((int64_t)1) << 47) + val1)) * ((int64_t) this->sensor_compensation_data.p1)  >> 33;
+
+        if (val1 == 0)
+        {
+            // avoid division by 0
+            this->pressure = 0;
+            return;
+        }
+
+        p = 1048576 - this->raw_press;
+        p = (((p << 31) - val2) * 3125) / val1;
+        val1 = (((int64_t) this->sensor_compensation_data.p9) * (p >> 13) * (p >> 13)) >> 25;
+        val2 = (((int64_t) this->sensor_compensation_data.p8) * p) >> 19;
+
+        p = ((p + val1 + val2) >> 8) + (((int64_t) this->sensor_compensation_data.p7) << 4);
+        
+        // returning value in hPa
+	    this->pressure = (int32_t) p / 25600.0;
+    }   
+
+    void bme280::_compensate_humidity(void)
+    {
+        int32_t val1;
+
+        val1 = (this->t_fine - ((int32_t)76800));
+        val1 = (((((raw_hum << 14) - (((int32_t)this->sensor_compensation_data.h4) << 20) -
+                (((int32_t)this->sensor_compensation_data.h5)* val1)) + ((int32_t)16384)) >> 15) *
+                (((((((val1 * ((int32_t)this->sensor_compensation_data.h6)) >> 10) *
+                (((val1 * ((int32_t)this->sensor_compensation_data.h3)) >> 11) +
+                ((int32_t)32768))) >> 10) + ((int32_t)2097152)) *
+                ((int32_t)this->sensor_compensation_data.h2) + 8192) >> 14));
+        val1 = (val1 - (((((val1 >> 15) * (val1 >> 15))  >> 7) * ((int32_t)this->sensor_compensation_data.h1)) >> 4));
+        val1 = (val1 < 0) ? 0 : val1;
+        val1 = (val1 > 419430400) ? 419430400 : val1;
+        // get value in 32 bit unsigned integer in Q22.10 format (22 integer and 10 fractional bits)
+        float h = (val1 >> 12);
+        // convert value to final % RH float value
+        this->humidity = h / 1024.0;
     }
 
     bme280::bme280(bme_status (*read_fp)(uint8_t, uint8_t *, uint32_t), bme_status (*write_fp)(uint8_t, uint8_t *, uint32_t), void (*delay_fp)(uint32_t))
@@ -149,6 +264,7 @@ namespace BME280 {
         // perform soft reset
         uint8_t data = 0xB6;
         status = this->_write(BME280_RESET_ADDR, &data, 1);
+        if (status != STATUS_OK) { return status; }
 
         // wait for end of callibration
         status = this->_read(BME280_STATUS_ADDR, &data, 1);
@@ -156,13 +272,14 @@ namespace BME280 {
 
         while ((data & 0x01) != 0)
         {
-            this->_delay(10);
-            this->_read(BME280_STATUS_ADDR, &data, 1);
+            this->_delay(20);
+            status = this->_read(BME280_STATUS_ADDR, &data, 1);
             if (status != STATUS_OK) { return status; }
         }
         
         // reading parameters for data compensation
-        _readCompensationData();
+        status = _readCompensationData();
+        if (status != STATUS_OK) { return status; }
 
         if (mode == MODE_NORMAL)
         {
@@ -183,4 +300,115 @@ namespace BME280 {
         return status;
     }
 
+    bme_status bme280::bme280_ReadTemperature()
+    {
+        bme_status status;
+
+        status = _readRawData();
+        if (status != STATUS_OK)
+        {
+            return status;
+        }
+
+        // if measurement was skipped return -100
+        if(this->raw_temp == 0x800000)
+        {
+            this->temperature = -100.0f;
+            return STATUS_OK;
+        }
+        
+        _compensate_temperature();
+        return STATUS_OK;
+    }
+
+    bme_status bme280::bme280_ReadPressure()
+    {
+        bme_status status;
+
+        status = _readRawData();
+        if (status != STATUS_OK)
+        {
+            return status;
+        }
+
+        // if measurement was skipped return -100
+        if(this->raw_press == 0x800000)
+        {
+            this->pressure = -100.0f;
+            return STATUS_OK;
+        }
+
+        // get current t_fine for compenastion
+        _compensate_temperature();
+        _compensate_pressure();
+
+        return STATUS_OK;
+    }
+
+    bme_status bme280::bme280_ReadHumidity()
+    {
+        bme_status status;
+
+        status = _readRawData();
+        if (status != STATUS_OK)
+        {
+            return status;
+        }
+
+        // if measurement was skipped return -100
+        if(this->raw_hum == 0x8000)
+        {
+            this->humidity = -100.0f;
+            return STATUS_OK;
+        }
+
+        // get current t_fine for compenastion
+        _compensate_temperature();
+        _compensate_humidity();
+
+        return STATUS_OK;
+    }
+
+    bme_status bme280::bme280_ReadMeasurements()
+    {
+        bme_status status;
+
+        status = _readRawData();
+        if (status != STATUS_OK)
+        {
+            return status;
+        }
+
+        // if tempearture measurement was skipped return -100
+        if(this->raw_temp == 0x800000)
+        {
+            this->temperature = -100.0f;
+        }
+        else
+        {
+            _compensate_temperature();
+        }
+
+        // if tempearture measurement was skipped return -100
+        if(this->raw_press == 0x800000)
+        {
+            this->pressure = -100.0f;
+        }
+        else
+        {
+            _compensate_pressure();
+        }
+
+        // if humidity measurement was skipped return -100
+        if(this->raw_hum == 0x8000)
+        {
+            this->humidity = -100.0f;
+        }
+        else
+        {
+            _compensate_humidity();
+        }
+
+        return STATUS_OK;
+    }
 }
