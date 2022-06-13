@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.19)
 set(This Testing)
 
 set(Sources
-    Tests.cpp
+    BME280_Tests.cpp
 )
 
 add_executable(${This} ${Sources})

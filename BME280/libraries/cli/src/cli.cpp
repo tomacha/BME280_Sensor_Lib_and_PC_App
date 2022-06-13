@@ -100,9 +100,9 @@ namespace CLI
             status = _find_command(&argv[0], &cmd_handler);
             if (status != STATUS_OK)
             {   
-                this->_write((uint8_t*) "CLI Could not find command\n", sizeof("CLI Could not find command\n",));
+                this->_write((uint8_t*) "CLI Could not find command\n", sizeof("CLI Could not find command\n"));
                 this->_write((uint8_t*) argv[0].data(), argv[0].length());
-                this->_write((uint8_t*) "\n", sizeof("\n",));
+                this->_write((uint8_t*) "\n", sizeof("\n"));
             }
             else
             {
