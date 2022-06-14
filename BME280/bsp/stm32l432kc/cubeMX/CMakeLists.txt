@@ -1,8 +1,3 @@
-# Tworzymy bibliotekę - interfejs: nie buduje ona nic, ale załącza "publiczny
-# interfejs biblioteki stm32_hal_obj", a także wymusza linkowanie ze wszystkimi
-# plikami obiektowymi biblioteki stm32_hal_obj (zamiast tworzyć pojedynczą
-# bibliotekę statyczną) Dzięki temu, podczas tworzenia biblioteki, nie zostaną
-# usunięte "pozornie" nieużywane symbole.
 add_library(stm32_hal INTERFACE)
 target_link_libraries(stm32_hal INTERFACE stm32_hal_obj $<TARGET_OBJECTS:stm32_hal_obj>)
 
@@ -38,7 +33,6 @@ add_library(
   Core/Src/system_stm32l4xx.c  
   startup_stm32l432xx.s)
 
-# Dodajemy foldery nagłówków, tak jak w CubeMX Makefile
 target_include_directories(
   stm32_hal_obj
   PUBLIC  Core/Inc
@@ -47,5 +41,4 @@ target_include_directories(
           Drivers/CMSIS/Device/ST/STM32L4xx/Include
           Drivers/CMSIS/Include)
 
-# Dodajemy definicje, tak jak w CubeMX Makefile
 target_compile_definitions(stm32_hal_obj PUBLIC USE_HAL_DRIVER STM32L432xx)
