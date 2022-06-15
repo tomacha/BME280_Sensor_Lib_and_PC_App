@@ -115,7 +115,6 @@ namespace CLI
                 {
                     this->_write((uint8_t*) "CLI Command_ERROR\n", sizeof("CLI Command_ERROR\n") - 1);
                 }
-                
             }
             this->cmd_pending_number -= 1;
         }

@@ -16,9 +16,11 @@ extern "C" UART_HandleTypeDef huart2;
 
 static CLI::cli_status bme280Init(std::vector<std::string> *argv);
 static CLI::cli_status bme280GetMeasurements(std::vector<std::string> *argv);
+static CLI::cli_status bme280Deinit(std::vector<std::string> *argv);
 
 std::vector<CLI::cli_command_t> BME280_Commands{
     {.command = "bme280_initialize", .cmd_handler = &bme280Init},
+    {.command = "sensor_deinitialize", .cmd_handler = &bme280Deinit},
     {.command = "bme280_get_measurements", .cmd_handler = &bme280GetMeasurements},
     };
 
@@ -187,3 +189,12 @@ static CLI::cli_status bme280GetMeasurements(std::vector<std::string> *argv)
     return CLI::STATUS_ERROR;
 }
 
+static CLI::cli_status bme280Deinit(std::vector<std::string> *argv)
+{
+    auto status = sensor.bme280_DeInit();
+    if (status == BME280::STATUS_OK)
+    {
+        return CLI::STATUS_OK;
+    }
+    return CLI::STATUS_ERROR;
+}

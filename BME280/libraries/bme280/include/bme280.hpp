@@ -154,6 +154,13 @@ namespace BME280 {
             meas_oversampling press_oversampling, working_mode mode, standby_time s_time, filter_coeffitiens filter);
 
         /**
+         * @brief Performs soft reset on the sensor.
+         * 
+         * @return STATUS_OK if initialization was successful otherwise STATUS_ERROR. 
+         */
+        bme_status bme280_DeInit(void);
+
+        /**
          * @brief Read raw tempearatue from sensor and compensate it.
          * 
          * @return STATUS_OK if read was successful otherwise STATUS_ERROR.

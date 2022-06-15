@@ -347,7 +347,14 @@ namespace BME280 {
         return STATUS_OK;
     }
 
-    bme_status bme280::bme280_ReadHumidity()
+    bme_status bme280::bme280_DeInit(void)
+    {
+        // perform soft reset
+        uint8_t data = 0xB6; 
+        return this->_write(BME280_RESET_ADDR, &data, 1);
+    }
+
+    bme_status bme280::bme280_ReadHumidity(void)
     {
         bme_status status;
 
