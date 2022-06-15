@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(This Testing)
+set(This Unit_tests)
 
 set(Sources
     BME280_Tests.cpp
