@@ -1,6 +1,20 @@
 [
     {
+        "name": "x86_64",
+        "toolchainFile": "${workspaceFolder}/bsp/x86_64/toolchain.cmake",
+        "compilers": {
+            "C": "/usr/bin/gcc",
+            "CXX": "/usr/bin/g++",
+            "ASM": "/usr/bin/gcc"
+        }
+    },
+    {
         "name": "STM32L432KC kit",
-        "toolchainFile": "${workspaceFolder}/bsp/stm32l432kc/toolchain.cmake"
+        "toolchainFile": "${workspaceFolder}/bsp/stm32l432kc/toolchain.cmake",
+        "compilers": {
+            "C": "/usr/bin/arm-none-eabi-gcc",
+            "CXX": "/usr/bin/arm-none-eabi-g++",
+            "ASM": "/usr/bin/arm-none-eabi-gcc"
+        }
     }
 ]
