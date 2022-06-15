@@ -109,11 +109,11 @@ namespace CLI
                 status = cmd_handler(&argv);
                 if (status == STATUS_OK)
                 {
-                    this->_write((uint8_t*) "CLI Command_OK\n", sizeof("CLI Command_OK\n"));
+                    this->_write((uint8_t*) "CLI Command_OK\n", sizeof("CLI Command_OK\n") - 1);
                 }
                 else
                 {
-                    this->_write((uint8_t*) "CLI Command_ERROR\n", sizeof("CLI Command_ERROR\n"));
+                    this->_write((uint8_t*) "CLI Command_ERROR\n", sizeof("CLI Command_ERROR\n") - 1);
                 }
                 
             }
