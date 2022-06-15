@@ -125,7 +125,7 @@ namespace BME280 {
             reg &= 0x03;
             if(reg == MODE_SLEEP)
             {
-                break;;
+                break;
             }
         }
 
@@ -285,6 +285,8 @@ namespace BME280 {
         {
             // setting standby time, filter and disable 3-wire SPI
             data = ((((uint8_t)(s_time) << 5) | ((uint8_t)(filter) << 2)) & 0xFC);
+            status = this->_write(BME280_CONFIG_ADDR, &data, 1);
+            if (status != STATUS_OK) { return status; }
         }
 
         status = this->_read(BME280_CTRL_HUM_ADDR, &data, 1);
