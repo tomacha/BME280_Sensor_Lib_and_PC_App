@@ -20,7 +20,7 @@ class UARTThread(QtCore.QThread):
     # @param com_nbr number of COM port (e.g. "COM10")
     # @param baudrate specifies the baudarte of COM port
     # @param op_mode specifies receiving mode: 0 for normal, 1 for command mode (waiting for \n when receiving data)
-    def __init__(self, com_nbr, baudrate, op_mode= 0):
+    def __init__(self, com_nbr, baudrate, op_mode = 0):
         QtCore.QThread.__init__(self)
         self.ser = serial.Serial(com_nbr, baudrate, timeout = 1000, parity = serial.PARITY_NONE, rtscts  =0)
         self.op_mode = op_mode
